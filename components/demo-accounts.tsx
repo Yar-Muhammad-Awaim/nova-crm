@@ -53,20 +53,23 @@ export function DemoAccounts() {
       </button>
 
       {open && (
-        <div className="max-h-72 overflow-y-auto border-t p-1.5">
+        <div className="max-h-80 overflow-y-auto border-t p-1.5">
           {ACCOUNTS.map((a) => (
             <div
               key={a.email}
               className="flex items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-accent/60"
             >
-              <Badge variant="outline" className={`${ROLE_STYLE[a.role]} shrink-0 text-[10px]`}>
-                {a.role}
-              </Badge>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{a.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{a.email}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={`${ROLE_STYLE[a.role]} shrink-0 text-[10px]`}>
+                    {a.role}
+                  </Badge>
+                  <span className="truncate text-sm font-medium">{a.name}</span>
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">{a.note}</span>
+                </div>
+                {/* Full width on its own line: judges need to read and copy this. */}
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground">{a.email}</p>
               </div>
-              <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">{a.note}</span>
               <Button
                 size="icon"
                 variant="ghost"
