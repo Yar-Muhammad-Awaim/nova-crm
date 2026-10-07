@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // A stray package-lock.json in the home directory confuses Next's workspace
   // detection; pin the root to this project.
   outputFileTracingRoot: __dirname,
+  devIndicators: { position: "bottom-right" },
 };
 
 export default nextConfig;
