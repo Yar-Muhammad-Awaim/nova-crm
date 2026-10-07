@@ -9,7 +9,6 @@
 | | |
 |---|---|
 | **Live application** | https://nova-crm-virid.vercel.app/ |
-| **Demo video** | _To be added_ |
 | **Repository** | https://github.com/Yar-Muhammad-Awaim/nova-crm |
 
 **Judges: start with [`JUDGES.md`](./JUDGES.md)** — a 3-minute test script, the exact things
@@ -59,7 +58,6 @@ All ten seeded accounts use the same password. The full list is under
 | Project search + manager filter | ✅ Extra |
 | Marketing landing page at `/` | ✅ Extra |
 | Deployment to a public URL | ✅ [nova-crm-virid.vercel.app](https://nova-crm-virid.vercel.app/) |
-| Recorded demo video | ⬜ Not done yet |
 
 **Deliberately not built,** because the challenge pack excludes them: signup, forgot
 password, email verification, user-management screens, cost calculation, progress
@@ -230,7 +228,6 @@ are untouched.
 
 ## Known Limitations
 
-- No demo video recorded yet.
 - The AI call depends on DeepSeek availability and your API quota. If the provider is
   slow or rate-limited, the conversion step shows an error and saves nothing — the app
   stays usable, you just retry.
