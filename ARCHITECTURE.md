@@ -1,4 +1,4 @@
-# 🗼 LIGHTHOUSE — How We Solved This, Explained For Humans
+# Architecture — How This Works, Explained For Humans
 
 > This document is written **as the code is being written**. Read it top-to-bottom
 > and you will be able to stand in front of a judge and explain every single
