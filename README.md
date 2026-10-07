@@ -8,7 +8,7 @@
 
 | | |
 |---|---|
-| **Live application** | _Not deployed yet — see [Deployment](#deployment-details)_ |
+| **Live application** | https://nova-crm-virid.vercel.app/ |
 | **Demo video** | _To be added_ |
 | **Repository** | https://github.com/Yar-Muhammad-Awaim/nova-crm |
 
@@ -16,12 +16,24 @@
 to try to break, and where each requirement from the challenge pack is implemented.
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains how the whole thing works in plain English.
 
+### Quick login
+
+Open <https://nova-crm-virid.vercel.app/login> and sign in with:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@novaworks.example` | `Demo123!` |
+| Manager | `ayesha@novaworks.example` | `Demo123!` |
+| Developer | `ali@novaworks.example` | `Demo123!` |
+
+All ten seeded accounts use the same password. The full list is under
+[Demo Login Accounts](#demo-login-accounts).
+
 ---
 
 ## Team
 
-- **Team name:** _[fill in]_
-- **Members and responsibilities:** _[fill in — four members]_
+- **Members:** Yar Muhammad Uwaim, Azeem Sarwar
 
 ---
 
@@ -46,7 +58,7 @@ to try to break, and where each requirement from the challenge pack is implement
 | Team Workload — effort summed per developer | ✅ Extra |
 | Project search + manager filter | ✅ Extra |
 | Marketing landing page at `/` | ✅ Extra |
-| Deployment to a public URL | ⬜ Not done yet |
+| Deployment to a public URL | ✅ [nova-crm-virid.vercel.app](https://nova-crm-virid.vercel.app/) |
 | Recorded demo video | ⬜ Not done yet |
 
 **Deliberately not built,** because the challenge pack excludes them: signup, forgot
@@ -176,7 +188,7 @@ during judging takes a couple of seconds.
 
 The full script with expected values is in **[`JUDGES.md`](./JUDGES.md)**. In short:
 
-1. Sign in as `admin@novaworks.example` / `Demo123!`
+1. Open <https://nova-crm-virid.vercel.app/login> and sign in as `admin@novaworks.example` / `Demo123!`
 2. Open **Create from Transcript** → **Load sample** (the supplied meeting is built in;
    you can also paste your own)
 3. Click **Create from Transcript** → review the proposal → **Save to CRM**
@@ -199,13 +211,13 @@ are untouched.
 
 ## Deployment Details
 
-- **Deployment status:** Local only at the time of writing
+- **Deployment status:** Live at https://nova-crm-virid.vercel.app/
 - **Database:** Supabase (hosted PostgreSQL 17, `ap-south-1`) — already remote, so the
   app runs against a hosted database even locally
-- **Frontend/backend host:** intended Vercel (single deployment — Next.js serves both)
+- **Frontend/backend host:** Vercel (single deployment — Next.js serves both)
 - **Deployed branch/commit:** `main`
 
-### How we would deploy
+### How it is deployed
 
 1. `npx vercel` from the repository root. Build command `next build`, output `.next`.
 2. Set the five environment variables from the table above in the Vercel project
@@ -218,7 +230,7 @@ are untouched.
 
 ## Known Limitations
 
-- **Not deployed yet**, and no demo video recorded yet.
+- No demo video recorded yet.
 - The AI call depends on DeepSeek availability and your API quota. If the provider is
   slow or rate-limited, the conversion step shows an error and saves nothing — the app
   stays usable, you just retry.
