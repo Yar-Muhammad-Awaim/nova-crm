@@ -22,7 +22,7 @@ export function Bento() {
           sub="Extraction is the simple half. Everything below is the half that decides whether you can trust the result."
         />
 
-        <Stagger className="mt-14 grid gap-4 md:auto-rows-[minmax(11rem,auto)] md:grid-cols-6">
+        <Stagger className="mt-14 grid gap-4 md:auto-rows-[minmax(10rem,auto)] md:grid-cols-6">
           {FEATURES.map((f) => (
             <motion.div key={f.title} variants={staggerChild} className={SPAN[f.span]}>
               <SpotlightCard
@@ -33,8 +33,16 @@ export function Bento() {
                 <p className="measure mt-2.5 text-pretty text-sm leading-relaxed text-muted-foreground">
                   {f.body}
                 </p>
-                <div className="mt-auto pt-7">
-                  <BentoVisual kind={f.visual} />
+                <div
+                  className={
+                    f.span === "lg"
+                      ? "mt-8 flex flex-1 items-center justify-center"
+                      : "mt-auto pt-7"
+                  }
+                >
+                  <div className={f.span === "lg" ? "w-full max-w-md" : "w-full"}>
+                    <BentoVisual kind={f.visual} />
+                  </div>
                 </div>
               </SpotlightCard>
             </motion.div>
