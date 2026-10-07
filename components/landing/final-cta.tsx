@@ -32,7 +32,7 @@ export function FinalCta() {
         <Reveal delay={0.16}>
           <div className="mt-10">
             <Magnetic strength={0.4}>
-              <Button size="lg" className="group relative overflow-hidden" render={<Link href={FINAL_CTA.cta.href} />}>
+              <Button size="lg" className="group relative overflow-hidden" nativeButton={false} render={<Link href={FINAL_CTA.cta.href} />}>
                 {FINAL_CTA.cta.label}
                 <ArrowRight
                   className="size-4 transition-transform duration-300 group-hover:translate-x-0.5"

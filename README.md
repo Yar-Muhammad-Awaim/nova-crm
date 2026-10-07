@@ -3,7 +3,7 @@
 **The Infinity Hack '26 · AI Project Manager — Meeting to Execution**
 
 > Paste a meeting transcript. The AI reads it against your real team directory and
-> creates the projects, tasks, owners, deadlines and effort estimates for you.
+> creates the projects, tasks, owners, deadlines and effort estimates for you
 > Nobody types a row.
 
 | | |

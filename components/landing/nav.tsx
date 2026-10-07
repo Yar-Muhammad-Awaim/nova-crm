@@ -60,7 +60,7 @@ export function LandingNav() {
           <div className="hidden sm:block">
             <ThemeSwitcher compact />
           </div>
-          <Button size="sm" className="hidden sm:inline-flex" render={<Link href="/login" />}>
+          <Button size="sm" className="hidden sm:inline-flex" nativeButton={false} render={<Link href="/login" />}>
             Sign in
           </Button>
           <Button
@@ -101,7 +101,7 @@ export function LandingNav() {
                 <ThemeSwitcher />
               </li>
               <li className="pt-2">
-                <Button className="w-full" render={<Link href="/login" />}>Sign in</Button>
+                <Button className="w-full" nativeButton={false} render={<Link href="/login" />}>Sign in</Button>
               </li>
             </ul>
           </motion.div>

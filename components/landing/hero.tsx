@@ -46,6 +46,7 @@ export function Hero() {
           <Magnetic>
             <Button
               size="lg"
+              nativeButton={false}
               className="group relative overflow-hidden"
               render={<Link href={HERO.primary.href} />}
             >
@@ -62,7 +63,7 @@ export function Hero() {
             </Button>
           </Magnetic>
 
-          <Button size="lg" variant="ghost" className="group" render={<a href={HERO.secondary.href} />}>
+          <Button size="lg" variant="ghost" className="group" nativeButton={false} render={<a href={HERO.secondary.href} />}>
             {HERO.secondary.label}
             <ArrowDown
               className="size-4 transition-transform duration-300 group-hover:translate-y-0.5"
