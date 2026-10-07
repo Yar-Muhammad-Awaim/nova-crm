@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { requireSession, listUsers } from "@/lib/data";
-import { PageHeader } from "@/components/page-header";
 import { TranscriptStudio } from "@/components/transcript-studio";
 import { SAMPLE_TRANSCRIPT } from "@/lib/transcript";
 
@@ -14,13 +13,12 @@ export default async function TranscriptPage() {
   const directory = await listUsers();
 
   return (
-    <>
-      <PageHeader
-        eyebrow="AI automation"
-        title="Create from Transcript"
-        description="Paste a project-planning meeting. The AI reads it against the team directory and proposes projects with owners, deadlines and effort estimates. Nothing is saved until you approve it."
-      />
+    <div className="pt-14 lg:pt-0">
+      <header className="px-5 pb-3 pt-5 sm:px-8 lg:px-9">
+        <h1 className="text-2xl font-semibold tracking-tight">Create from Transcript</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Turn meeting notes into projects and assigned tasks. Review the draft before saving.</p>
+      </header>
       <TranscriptStudio sample={SAMPLE_TRANSCRIPT} directory={directory} />
-    </>
+    </div>
   );
 }

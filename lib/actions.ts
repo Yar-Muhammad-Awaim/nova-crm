@@ -6,8 +6,9 @@ import bcrypt from "bcryptjs";
 import { db } from "./supabase";
 import { createSession, destroySession } from "./session";
 import { requireAdmin, requireSession, listUsers, getProjectById } from "./data";
-import { draftFromTranscript, type ValidationIssue } from "./ai";
-import type { AiDraft } from "./ai";
+import { draftFromTranscript, reviseDraftWithAi } from "./ai";
+import { validateDraft, describeIssue, type AiDraft, type ValidationIssue } from "./draft-schema";
+import { z } from "zod";
 
 /* ------------------------------------------------------------------ */
 /* Login                                                               */
@@ -105,7 +106,8 @@ export async function analyzeTranscript(_prev: AnalyzeState, form: FormData): Pr
  */
 export async function saveDraft(draftJson: string) {
   await requireAdmin();
-  const draft = JSON.parse(draftJson) as AiDraft;
+  const { draft, issues } = validateDraft(JSON.parse(draftJson), await listUsers());
+  if (!draft || issues.length) throw new Error(issues.map(describeIssue).join("\n"));
 
   const { data, error } = await db.rpc("save_ai_draft", { payload: draft });
   if (error) throw new Error(error.message);
@@ -115,9 +117,48 @@ export async function saveDraft(draftJson: string) {
   return data as { projects: number; tasks: number };
 }
 
+/** AI edits are proposals only; saving still requires the user's approval. */
+export async function reviseDraft(draftJson: string, instructions: string) {
+  await requireAdmin();
+  const request = z.string().trim().min(3, "Describe the change you want.").max(4000).parse(instructions);
+  const directory = await listUsers();
+  const current = validateDraft(JSON.parse(draftJson), directory);
+  // A structurally complete draft may have owner/date issues the AI can fix.
+  if (!current.draft) throw new Error(current.issues.map(describeIssue).join("\n"));
+  const result = await reviseDraftWithAi(current.draft, request, directory);
+  if (!result.draft || result.issues.length) throw new Error(result.issues.map(describeIssue).join("\n"));
+  return result.draft;
+}
+
 /* ------------------------------------------------------------------ */
 /* Editing                                                             */
 /* ------------------------------------------------------------------ */
+
+export async function moveTask(input: {
+  taskId: string; projectId: string;
+  status: "todo" | "in_progress" | "done"; beforeId: string | null;
+}) {
+  const s = await requireSession();
+  if (s.role === "AGENT") throw new Error("FORBIDDEN");
+  const move = z.object({
+    taskId: z.uuid(), projectId: z.uuid(),
+    status: z.enum(["todo", "in_progress", "done"]),
+    beforeId: z.uuid().nullable(),
+  }).parse(input);
+  const project = await getProjectById(s, move.projectId);
+  const tasks = project.tasks ?? [];
+  if (!tasks.some((task) => task.id === move.taskId)) throw new Error("NOT_FOUND");
+  if (move.beforeId === move.taskId) return;
+
+  const { error } = await db.rpc("move_task_on_board", {
+    target_project: move.projectId, target_task: move.taskId,
+    target_status: move.status, before_task: move.beforeId,
+  });
+  if (error) throw new Error("Could not move the task. Please try again.");
+  revalidatePath(`/projects/${move.projectId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/my-tasks");
+}
 
 export async function updateTask(taskId: string, patch: {
   title?: string; description?: string; assignee_id?: string;

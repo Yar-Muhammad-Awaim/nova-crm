@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requireSession, getProjects, getMyTasks, listUsers } from "@/lib/data";
+import { requireSession, getProjects, getMyTasks, listUsers, listTeams } from "@/lib/data";
+import { ProjectDialog } from "@/components/create-dialogs";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { ProjectCard } from "@/components/project-card";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const s = await requireSession();
-  const [projects, users] = await Promise.all([getProjects(s), listUsers()]);
+  const [projects, users, teams] = await Promise.all([getProjects(s), listUsers(), listTeams()]);
   const myTasks = s.role === "AGENT" ? await getMyTasks(s) : [];
 
   const taskTotal =
@@ -34,10 +35,11 @@ export default async function DashboardPage() {
         title={`Welcome back, ${s.name.split(" ")[0]}`}
         description={headline}
         action={
-          s.role === "ADMIN" ? (
-            <Button render={<Link href="/transcript" />}>
-                <FileText className="size-4" /> Create from Transcript
-              </Button>
+          s.role !== "AGENT" ? (
+            <div className="flex flex-wrap gap-2">
+              {s.role === "ADMIN" && <Button variant="outline" nativeButton={false} render={<Link href="/transcript" />}><FileText className="size-4" /> From transcript</Button>}
+              <ProjectDialog users={users} teams={teams} session={s} />
+            </div>
           ) : null
         }
       />
@@ -74,7 +76,7 @@ export default async function DashboardPage() {
           <StatCard
             label="Team"
             value={users.filter((u) => u.role !== "ADMIN").length}
-            sub="3 managers · 6 developers"
+            sub={`${users.filter((user) => user.role === "MANAGER").length} managers · ${users.filter((user) => user.role === "AGENT").length} members`}
             icon={<Users className="size-4" />}
           />
         </div>
@@ -98,7 +100,7 @@ export default async function DashboardPage() {
                 {s.role === "ADMIN" ? "All projects" : "Your projects"}
               </h2>
               {projects.length > 0 && (
-                <Button variant="ghost" size="sm" render={<Link href="/projects" />}>View all</Button>
+                <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/projects" />}>View all</Button>
               )}
             </div>
 
@@ -107,12 +109,12 @@ export default async function DashboardPage() {
                 title={s.role === "ADMIN" ? "No projects yet" : "No projects assigned to you"}
                 body={
                   s.role === "ADMIN"
-                    ? "Paste the meeting transcript and let the AI create the projects and tasks for you."
-                    : "Projects appear here once the administrator assigns you as their manager."
+                    ? "Create a project manually or turn a meeting transcript into assigned work."
+                    : "Create a project or wait for an administrator to assign one to you."
                 }
                 action={
                   s.role === "ADMIN" ? (
-                    <Button render={<Link href="/transcript" />}>
+                    <Button nativeButton={false} render={<Link href="/transcript" />}>
                         <FileText className="size-4" /> Create from Transcript
                       </Button>
                   ) : undefined

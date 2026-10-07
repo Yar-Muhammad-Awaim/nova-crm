@@ -13,7 +13,7 @@ export default function NotFound() {
         This page does not exist — or it belongs to someone whose projects you are not permitted
         to see. Access rules are applied on the server.
       </p>
-      <Button className="mt-6" render={<Link href="/dashboard" />}>
+      <Button className="mt-6" nativeButton={false} render={<Link href="/dashboard" />}>
         Back to dashboard
       </Button>
     </div>

@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "./supabase";
 import { getSession } from "./session";
-import type { Project, Task, User, Session } from "./types";
+import type { Project, Task, User, Session, Team } from "./types";
 
 /** Throws unless somebody is logged in. Every page/route starts with this. */
 export async function requireSession(): Promise<Session> {
@@ -18,6 +18,7 @@ export async function requireAdmin(): Promise<Session> {
 
 /** The team directory. Read-only, visible to any logged-in user. */
 export async function listUsers(): Promise<User[]> {
+  await requireSession();
   const { data, error } = await db
     .from("users")
     .select("id,name,email,role,specialization,skills")
@@ -25,6 +26,16 @@ export async function listUsers(): Promise<User[]> {
     .order("id");
   if (error) throw error;
   return data as User[];
+}
+
+/** Like the people directory, team membership is visible to signed-in staff. */
+export async function listTeams(): Promise<Team[]> {
+  await requireSession();
+  const { data, error } = await db.from("teams")
+    .select("id,name,description,manager_id,manager:users!teams_manager_id_fkey(id,name),members:team_members(user_id)")
+    .order("name");
+  if (error) throw error;
+  return data as unknown as Team[];
 }
 
 /**
@@ -39,7 +50,7 @@ export async function listUsers(): Promise<User[]> {
  */
 export async function getProjects(s: Session): Promise<Project[]> {
   const base = () =>
-    db.from("projects").select("*, manager:users!projects_manager_id_fkey(id,name), tasks(id)");
+    db.from("projects").select("*, manager:users!projects_manager_id_fkey(id,name), team:teams!projects_team_id_fkey(id,name), tasks(id)");
 
   if (s.role === "ADMIN") {
     const { data, error } = await base().order("created_at");

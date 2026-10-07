@@ -1,4 +1,5 @@
-import { requireSession, getProjects } from "@/lib/data";
+import { requireSession, getProjects, listUsers, listTeams } from "@/lib/data";
+import { ProjectDialog } from "@/components/create-dialogs";
 import { PageHeader } from "@/components/page-header";
 import { ProjectsExplorer } from "@/components/projects-explorer";
 import { EmptyState } from "@/components/empty-state";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const s = await requireSession();
-  const projects = await getProjects(s);
+  const [projects, users, teams] = await Promise.all([getProjects(s), listUsers(), listTeams()]);
 
   const description =
     s.role === "ADMIN"
@@ -18,12 +19,13 @@ export default async function ProjectsPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Projects" title="Projects" description={description} />
+      <PageHeader eyebrow="Projects" title="Projects" description={description}
+        action={s.role !== "AGENT" ? <ProjectDialog users={users} teams={teams} session={s} /> : undefined} />
       <div className="px-6 py-7 lg:px-9">
         {projects.length === 0 ? (
           <EmptyState
             title="No projects visible to you"
-            body="Projects appear here once the administrator creates them from a meeting transcript."
+            body={s.role === "AGENT" ? "Projects appear here when a task is assigned to you." : "Create a project to start organizing your team's work."}
           />
         ) : (
           <ProjectsExplorer projects={projects} />

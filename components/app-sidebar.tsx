@@ -3,21 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { logout } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ROLE_LABEL, ROLE_STYLE, initials } from "@/lib/ui";
+import { SidebarAccount } from "@/components/sidebar-account";
 import type { Session } from "@/lib/types";
 import {
   Sparkles, LayoutDashboard, FolderKanban, Users, ListChecks,
-  FileText, LogOut, BarChart3, Menu, X,
+  FileText, BarChart3, Menu, X, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useState } from "react";
 
 export function AppSidebar({ session }: { session: Session }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Navigation is built from the role, so a user is never shown a door
   // they cannot walk through. (The server refuses them anyway — this is
@@ -28,22 +26,36 @@ export function AppSidebar({ session }: { session: Session }) {
     { href: "/projects", label: "Projects", icon: FolderKanban, show: true },
     { href: "/my-tasks", label: "My Tasks", icon: ListChecks, show: session.role === "AGENT" },
     { href: "/workload", label: "Team Workload", icon: BarChart3, show: session.role !== "AGENT" },
-    { href: "/team", label: "Team Directory", icon: Users, show: true },
+    { href: "/team", label: "People & teams", icon: Users, show: true },
   ].filter((n) => n.show);
 
-  const body = (
+  const renderBody = (compact: boolean, desktop = false) => (
     <>
-      <div className="flex items-center gap-2.5 px-5 py-5">
+      <div className={`flex items-center gap-2.5 py-5 ${compact ? "flex-col px-2" : "px-5"}`}>
         <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
           <Sparkles className="size-4" />
         </div>
-        <div className="min-w-0">
+        {!compact && <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold tracking-tight">NovaWorks</p>
           <p className="truncate text-xs text-muted-foreground">Project CRM</p>
-        </div>
+        </div>}
+        {desktop && (
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => setCollapsed((value) => !value)}
+            aria-label={compact ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!compact}
+            aria-controls="desktop-navigation"
+            title={compact ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {compact ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
+          </Button>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3">
+      <nav id={desktop ? "desktop-navigation" : undefined} aria-label="Main navigation" className={`flex-1 space-y-0.5 ${compact ? "px-2" : "px-3"}`}>
         {nav.map((item) => {
           const active = path === item.href || path.startsWith(`${item.href}/`);
           return (
@@ -51,7 +63,9 @@ export function AppSidebar({ session }: { session: Session }) {
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              aria-label={compact ? item.label : undefined}
+              title={compact ? item.label : undefined}
+              className={`relative flex items-center rounded-lg py-2 text-sm font-medium transition-colors ${compact ? "justify-center px-2" : "gap-3 px-3"} ${
                 active ? "text-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
               }`}
             >
@@ -62,34 +76,14 @@ export function AppSidebar({ session }: { session: Session }) {
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <item.icon className={`relative size-4 ${active ? "text-primary" : ""}`} />
-              <span className="relative">{item.label}</span>
+              <item.icon className={`relative size-4 shrink-0 ${active ? "text-primary" : ""}`} aria-hidden="true" />
+              {!compact && <span className="relative">{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-          <Avatar className="size-8">
-            <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
-              {initials(session.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{session.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{ROLE_LABEL[session.role]}</p>
-          </div>
-        </div>
-        <Badge variant="outline" className={`${ROLE_STYLE[session.role]} mx-2 mt-1 text-[10px]`}>
-          {session.userId}
-        </Badge>
-        <form action={logout} className="mt-2">
-          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
-            <LogOut className="size-4" /> Sign out
-          </Button>
-        </form>
-      </div>
+      <SidebarAccount session={session} compact={compact} />
     </>
   );
 
@@ -115,11 +109,11 @@ export function AppSidebar({ session }: { session: Session }) {
       </div>
 
       {open && (
-        <div className="fixed inset-0 top-[53px] z-30 flex flex-col bg-sidebar lg:hidden">{body}</div>
+        <div className="fixed inset-0 top-[53px] z-30 flex flex-col bg-sidebar lg:hidden">{renderBody(false)}</div>
       )}
 
-      <aside className="sticky top-0 hidden h-dvh w-62 shrink-0 flex-col border-r bg-sidebar lg:flex">
-        {body}
+      <aside className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r bg-sidebar transition-[width] duration-200 lg:flex ${collapsed ? "w-16" : "w-62"}`}>
+        {renderBody(collapsed, true)}
       </aside>
     </>
   );

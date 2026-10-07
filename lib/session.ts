@@ -4,7 +4,13 @@ import { SignJWT, jwtVerify } from "jose";
 import type { Session } from "./types";
 
 const COOKIE = "nw_session";
-const key = () => new TextEncoder().encode(process.env.SESSION_SECRET!);
+const key = () => {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret?.trim()) {
+    throw new Error("SESSION_SECRET must be set before signing in.");
+  }
+  return new TextEncoder().encode(secret);
+};
 
 /** Issue a signed, httpOnly session cookie. Called only by the login action. */
 export async function createSession(s: Session) {

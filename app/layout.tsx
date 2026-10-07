@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 // Self-hosted via fontsource: no Google Fonts CDN, no runtime network call,
 // so the page renders identically on a venue wifi that blocks third parties.
 import "@fontsource/instrument-serif/400.css";
@@ -17,15 +17,14 @@ export const viewport: Viewport = { themeColor: "#0a0e18" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className="min-h-dvh bg-background text-foreground antialiased"
         /* Some browser extensions inject attributes onto <body> before React
            hydrates, which React reports as a mismatch. Not our markup. */
         suppressHydrationWarning
       >
-        {children}
-        <Toaster position="top-center" richColors closeButton />
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

@@ -78,7 +78,7 @@ export function DemoAccounts() {
                 aria-label={`Copy ${a.name}\u2019s email address`}
               >
                 {copied === a.email
-                  ? <Check className="size-3.5 text-emerald-400" aria-hidden="true" />
+                  ? <Check className="size-3.5 text-success" aria-hidden="true" />
                   : <Copy className="size-3.5" aria-hidden="true" />}
               </Button>
             </div>

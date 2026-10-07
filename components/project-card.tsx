@@ -40,7 +40,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
             <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
               <div className="flex items-center gap-1.5 rounded-md border bg-secondary/40 px-2 py-1">
                 <Avatar className="size-4">
-                  <AvatarFallback className="bg-sky-500/20 text-[10px] font-semibold text-sky-400">
+                  <AvatarFallback className="bg-manager/20 text-[10px] font-semibold text-manager">
                     {initials(project.manager?.name ?? "?")}
                   </AvatarFallback>
                 </Avatar>

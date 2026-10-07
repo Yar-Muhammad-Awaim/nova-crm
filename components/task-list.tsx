@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarDays, Clock, Pencil, Loader2 } from "lucide-react";
 import { formatDate, initials, urgency } from "@/lib/ui";
 import type { Task, User } from "@/lib/types";
+import { TASK_COLUMNS, taskStatus } from "@/lib/task-board";
 
 export function TaskList({
   tasks, showProject = false, editable = false, agents = [],
@@ -46,6 +47,9 @@ export function TaskList({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h4 className="text-sm font-medium tracking-tight">{t.title}</h4>
+                    <Badge variant="secondary" className="text-xs font-normal">
+                      {TASK_COLUMNS.find((column) => column.id === taskStatus(t))?.label}
+                    </Badge>
                     {showProject && t.project && (
                       <Link
                         href={`/projects/${t.project.id}`}
@@ -65,7 +69,7 @@ export function TaskList({
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1.5 rounded-md border bg-secondary/40 px-2 py-1">
                       <Avatar className="size-4">
-                        <AvatarFallback className="bg-emerald-500/20 text-[10px] font-semibold text-emerald-400">
+                        <AvatarFallback className="bg-success/15 text-xs font-semibold text-success">
                           {initials(t.assignee?.name ?? "?")}
                         </AvatarFallback>
                       </Avatar>
@@ -97,7 +101,7 @@ export function TaskList({
         ))}
       </div>
 
-      <EditTaskDialog task={editing} agents={agents} onClose={() => setEditing(null)} />
+      {editing && <EditTaskDialog key={editing.id} task={editing} agents={agents} onClose={() => setEditing(null)} />}
     </>
   );
 }
@@ -118,7 +122,7 @@ function DeadlineChip({ iso }: { iso: string }) {
   );
 }
 
-function EditTaskDialog({
+export function EditTaskDialog({
   task, agents, onClose,
 }: {
   task: Task | null;

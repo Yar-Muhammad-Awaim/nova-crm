@@ -49,7 +49,7 @@ export function LoginForm({ prefill }: { prefill?: string }) {
       <SubmitButton />
 
       <p className="text-center text-xs text-muted-foreground">
-        No signup, no email verification — all ten accounts are pre-seeded.
+        Use your account credentials or choose a demo account below.
       </p>
     </form>
   );

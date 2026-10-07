@@ -9,8 +9,8 @@ export const ROLE_LABEL: Record<Role, string> = {
 /** One colour per role, reused everywhere so the hierarchy is learnable. */
 export const ROLE_STYLE: Record<Role, string> = {
   ADMIN: "bg-primary/15 text-primary border-primary/30",
-  MANAGER: "bg-sky-500/15 text-sky-400 border-sky-500/30",
-  AGENT: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  MANAGER: "bg-manager/15 text-manager border-manager/30",
+  AGENT: "bg-success/15 text-success border-success/30",
 };
 
 export function initials(name: string) {

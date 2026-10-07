@@ -1,6 +1,7 @@
 import "server-only";
 import OpenAI from "openai";
-import { z } from "zod";
+import { validateDraft, type AiDraft } from "./draft-schema";
+export { AiDraft, type ValidationIssue } from "./draft-schema";
 import type { User } from "./types";
 
 /**
@@ -11,31 +12,6 @@ const client = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
   baseURL: "https://api.deepseek.com",
 });
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-/** The exact shape we will accept back. Anything else is rejected. */
-export const AiDraft = z.object({
-  projects: z.array(
-    z.object({
-      name: z.string().min(1),
-      clientName: z.string().min(1),
-      description: z.string().default(""),
-      managerId: z.string().min(1),
-      deadline: z.string().regex(ISO_DATE),
-      tasks: z.array(
-        z.object({
-          title: z.string().min(1),
-          description: z.string().default(""),
-          assigneeId: z.string().min(1),
-          deadline: z.string().regex(ISO_DATE),
-          estimatedHours: z.number().positive(),
-        })
-      ).min(1),
-    })
-  ).min(1),
-});
-export type AiDraft = z.infer<typeof AiDraft>;
 
 function systemPrompt(directory: User[]) {
   const lines = directory
@@ -62,7 +38,7 @@ Return ONLY JSON of this exact shape:
 {"projects":[{"name":"","clientName":"","description":"","managerId":"PM01","deadline":"2026-10-20","tasks":[{"title":"","description":"","assigneeId":"DEV01","deadline":"2026-10-12","estimatedHours":12}]}]}`;
 }
 
-export type ValidationIssue = { path: string; message: string };
+
 
 /**
  * Ask the model for a draft, then prove it is safe before anyone can save it.
@@ -93,34 +69,23 @@ export async function draftFromTranscript(transcript: string, directory: User[])
   try {
     parsed = JSON.parse(raw);
   } catch {
-    return { draft: null, issues: [{ path: "response", message: "The AI did not return valid JSON. Try again." }] as ValidationIssue[] };
+    return { draft: null, issues: [{ path: "response", message: "The AI did not return valid JSON. Try again." }] };
   }
 
-  const shape = AiDraft.safeParse(parsed);
-  if (!shape.success) {
-    return {
-      draft: null,
-      issues: shape.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
-    };
-  }
+  return validateDraft(parsed, directory);
+}
 
-  const draft = shape.data;
-  const byId = new Map(directory.map((u) => [u.id, u]));
-  const issues: ValidationIssue[] = [];
-
-  draft.projects.forEach((p, pi) => {
-    const mgr = byId.get(p.managerId);
-    if (!mgr) issues.push({ path: `projects[${pi}].managerId`, message: `"${p.managerId}" is not a person in the directory.` });
-    else if (mgr.role !== "MANAGER") issues.push({ path: `projects[${pi}].managerId`, message: `${mgr.name} is not a manager.` });
-
-    p.tasks.forEach((t, ti) => {
-      const a = byId.get(t.assigneeId);
-      const at = `projects[${pi}].tasks[${ti}]`;
-      if (!a) issues.push({ path: `${at}.assigneeId`, message: `"${t.assigneeId}" is not a person in the directory.` });
-      else if (a.role !== "AGENT") issues.push({ path: `${at}.assigneeId`, message: `${a.name} is not a developer.` });
-      if (t.deadline > p.deadline) issues.push({ path: `${at}.deadline`, message: `Task due ${t.deadline}, after the project deadline ${p.deadline}.` });
-    });
+/** Revise the user's current draft; no writes occur until explicit approval. */
+export async function reviseDraftWithAi(draft: AiDraft, instructions: string, directory: User[]) {
+  const res = await client.chat.completions.create({
+    model: process.env.DEEPSEEK_MODEL || "deepseek-chat",
+    temperature: 0,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt(directory) + "\nYou are now REVISING an existing draft, not extracting a new transcript. The current draft includes the user's manual edits. Preserve all projects, tasks and fields unless the user asks to change them. Follow the user's revision instructions while obeying the directory, role and date constraints. Return the COMPLETE updated draft as JSON. Never claim to save anything." },
+      { role: "user", content: JSON.stringify({ currentDraft: draft, revisionInstructions: instructions }) },
+    ],
   });
-
-  return { draft, issues };
+  try { return validateDraft(JSON.parse(res.choices[0]?.message?.content ?? ""), directory); }
+  catch { return { draft: null, issues: [{ path: "response", message: "DeepSeek did not return a usable revision. Your draft is unchanged." }] }; }
 }

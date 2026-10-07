@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { LoginForm } from "@/components/login-form";
 import { DemoAccounts } from "@/components/demo-accounts";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Sparkles, FileText, FolderKanban, ShieldCheck } from "lucide-react";
 
 export default async function LoginPage() {
@@ -63,9 +64,12 @@ export default async function LoginPage() {
             <h2 className="text-2xl font-semibold tracking-tight">NovaWorks</h2>
           </div>
 
-          <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
+            <ThemeSwitcher compact />
+          </div>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Use one of the ten seeded company accounts.
+            Sign in with your company account or explore a demo account below.
           </p>
 
           <div className="mt-7">

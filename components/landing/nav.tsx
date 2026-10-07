@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { NAV_LINKS } from "@/lib/content/landing";
 
 export function LandingNav() {
@@ -56,6 +57,9 @@ export function LandingNav() {
         </ul>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <div className="hidden sm:block">
+            <ThemeSwitcher compact />
+          </div>
           <Button size="sm" className="hidden sm:inline-flex" render={<Link href="/login" />}>
             Sign in
           </Button>
@@ -93,6 +97,9 @@ export function LandingNav() {
                   </a>
                 </li>
               ))}
+              <li className="border-t border-border/70 px-3 pt-4 sm:hidden">
+                <ThemeSwitcher />
+              </li>
               <li className="pt-2">
                 <Button className="w-full" render={<Link href="/login" />}>Sign in</Button>
               </li>
