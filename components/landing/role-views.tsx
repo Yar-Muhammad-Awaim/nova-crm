@@ -1,68 +1,98 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PROJECTS, TASKS, type LandingTask } from "./data";
+import { motion, AnimatePresence } from "motion/react";
+import { Check, EyeOff } from "lucide-react";
+import { ROLE_VIEWS, type RoleKey } from "@/lib/content/landing";
+import { SectionHeading, EASE } from "./primitives";
 
-const EASE_OUT = [0.23, 1, 0.32, 1] as const;
-
-const VIEWS = {
-  admin: { label: "Admin", who: "Administrator", filter: () => true },
-  manager: { label: "Bilal", who: "Project manager", filter: (t: LandingTask) => t.project === "quickserve" },
-  developer: { label: "Hamza", who: "Backend developer", filter: (t: LandingTask) => t.owner === "Hamza" },
-} as const;
-
-type View = keyof typeof VIEWS;
-
-/** Same twelve tasks, three logins. The filter mirrors lib/data.ts getProjects. */
 export function RoleViews() {
-  const [view, setView] = useState<View>("admin");
-  const v = VIEWS[view];
-  const visible = TASKS.filter(v.filter);
+  const [active, setActive] = useState<RoleKey>("ADMIN");
+  const view = ROLE_VIEWS.find((r) => r.key === active)!;
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs value={view} onValueChange={(next) => setView(next as View)}>
-          <TabsList aria-label="Signed in as">
-            {(Object.keys(VIEWS) as View[]).map((key) => (
-              <TabsTrigger key={key} value={key}>
-                {VIEWS[key].label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          {v.who} sees <span className="text-foreground tabular-nums">{visible.length}</span> of 12 tasks
-        </p>
-      </div>
+    <section id="roles" className="scroll-mt-24 py-24 sm:py-32">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <SectionHeading
+          eyebrow="Role-based access"
+          title={<>Everyone opens the same app and sees a <em className="italic text-primary">different company</em>.</>}
+          sub="Not a filtered list. Rows outside your scope are never returned by the server at all."
+        />
 
-      <ul className="grid gap-1" aria-label={`Tasks visible to ${v.label}`}>
-        <AnimatePresence initial={false} mode="popLayout">
-          {visible.map((t) => (
-            <motion.li
-              key={t.title}
-              layout
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
-              transition={{ duration: 0.25, ease: EASE_OUT }}
-              className="flex items-center justify-between gap-4 rounded-lg px-3 py-2 hover:bg-muted"
+        {/* Roving-free tablist: simple buttons with proper ARIA wiring. */}
+        <div
+          role="tablist"
+          aria-label="Choose a role"
+          className="hairline mt-12 inline-flex rounded-xl border bg-secondary/35 p-1"
+        >
+          {ROLE_VIEWS.map((r) => (
+            <button
+              key={r.key}
+              role="tab"
+              id={`tab-${r.key}`}
+              aria-selected={active === r.key}
+              aria-controls={`panel-${r.key}`}
+              onClick={() => setActive(r.key)}
+              className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:px-6 ${
+                active === r.key ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <div className="min-w-0">
-                <p className="truncate text-sm">{t.title}</p>
-                <p className="truncate text-xs text-muted-foreground">{PROJECTS[t.project].name}</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground tabular-nums">
-                <span className="hidden sm:inline">{t.owner}</span>
-                <span>{t.hours}&nbsp;h</span>
-                <span>{t.due}&nbsp;Oct</span>
-              </div>
-            </motion.li>
+              {active === r.key && (
+                <motion.span
+                  layoutId="role-pill"
+                  className="hairline absolute inset-0 rounded-lg border bg-card"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+              <span className="relative">{r.label}</span>
+            </button>
           ))}
-        </AnimatePresence>
-      </ul>
-    </div>
+        </div>
+
+        <div
+          role="tabpanel"
+          id={`panel-${active}`}
+          aria-labelledby={`tab-${active}`}
+          className="hairline mt-6 overflow-hidden rounded-2xl border bg-card/60"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.32, ease: EASE }}
+              className="grid gap-8 p-7 sm:p-9 lg:grid-cols-[1fr_1.1fr]"
+            >
+              <div>
+                <p className="font-mono text-[11px] tracking-[0.16em] text-primary uppercase">
+                  {view.person}
+                </p>
+                <p className="font-display mt-3 text-title text-balance">{view.summary}</p>
+                <p className="mt-5 flex items-start gap-2 text-sm text-muted-foreground">
+                  <EyeOff className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="text-pretty">{view.hidden}</span>
+                </p>
+              </div>
+
+              <ul className="space-y-2">
+                {view.sees.map((s, i) => (
+                  <motion.li
+                    key={s}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, delay: 0.06 + i * 0.07, ease: EASE }}
+                    className="hairline flex items-center gap-3 rounded-lg border bg-background/50 px-4 py-3"
+                  >
+                    <Check className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+                    <span className="text-sm">{s}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
   );
 }

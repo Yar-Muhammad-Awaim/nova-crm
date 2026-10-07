@@ -35,8 +35,8 @@ SUPABASE_SERVICE_ROLE_KEY=PASTE_SERVICE_ROLE_KEY_HERE   <-- from Supabase dashbo
 DEEPSEEK_API_KEY=PASTE_DEEPSEEK_KEY_HERE                <-- team has this
 ```
 
-Supabase project ref: `eriokbmholwbqaylnreh` · keys at
-`supabase.com/dashboard/project/eriokbmholwbqaylnreh/settings/api-keys` (the **service_role** one).
+Supabase project ref: `nrrxftisepforikqorvq` · keys at
+`supabase.com/dashboard/project/nrrxftisepforikqorvq/settings/api-keys` (the **service_role** one).
 
 ---
 

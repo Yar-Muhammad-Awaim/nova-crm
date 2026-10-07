@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/sonner";
+// Self-hosted via fontsource: no Google Fonts CDN, no runtime network call,
+// so the page renders identically on a venue wifi that blocks third parties.
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource/instrument-serif/400-italic.css";
+import "@fontsource-variable/inter-tight";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
