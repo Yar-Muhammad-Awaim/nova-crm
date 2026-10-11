@@ -16,9 +16,7 @@
     "@supabase/supabase-js": "^2.117.2",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "cn": "^0.4.0",
-    "date-fns": "^4.4.0",
     "jose": "^6.2.12",
     "lucide-react": "^1.52.0",
     "motion": "^14.0.0",
@@ -29,7 +27,6 @@
     "react-dom": "19.1.0",
     "shadcn": "^4.21.3",
     "sonner": "^2.0.8",
-    "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
