@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, Copy, Check, Sparkles, Briefcase, Code, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { ROLE_STYLE } from "@/lib/ui";
-import { quickLogin } from "@/lib/actions";
+import { quickLoginPersona } from "@/lib/actions";
 import type { Role } from "@/lib/types";
 
 const ACCOUNTS: { email: string; name: string; role: Role; note: string }[] = [
@@ -52,11 +52,25 @@ const FAST_PERSONAS = [
 export function DemoAccounts() {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [launchingEmail, setLaunchingEmail] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   async function copy(email: string) {
     await navigator.clipboard.writeText(email);
     setCopied(email);
     setTimeout(() => setCopied(null), 1400);
+  }
+
+  function handleLaunch(email: string) {
+    setLaunchingEmail(email);
+    startTransition(async () => {
+      try {
+        await quickLoginPersona(email);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to sign in");
+        setLaunchingEmail(null);
+      }
+    });
   }
 
   return (
@@ -69,18 +83,44 @@ export function DemoAccounts() {
         </div>
 
         <div className="grid gap-2">
-          {FAST_PERSONAS.map((p) => (
-            <form key={p.email} action={quickLogin}>
-              <input type="hidden" name="email" value={p.email} />
-              <input type="hidden" name="password" value="Demo123!" />
-              <PersonaLaunchButton
-                label={p.label}
-                name={p.name}
-                desc={p.desc}
-                icon={p.icon}
-              />
-            </form>
-          ))}
+          {FAST_PERSONAS.map((p) => {
+            const isThisPending = isPending && launchingEmail === p.email;
+            const Icon = p.icon;
+            return (
+              <button
+                key={p.email}
+                type="button"
+                onClick={() => handleLaunch(p.email)}
+                disabled={isPending}
+                className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/60 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.04] disabled:opacity-60 cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border/80 bg-muted/30 text-foreground group-hover:border-primary/40 group-hover:text-primary transition-colors">
+                    {isThisPending ? (
+                      <Loader2 className="size-4 animate-spin text-primary" />
+                    ) : (
+                      <Icon className="size-4" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                        {p.label}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono truncate">
+                        ({p.name})
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground truncate">{p.desc}</p>
+                  </div>
+                </div>
+
+                <span className="font-mono text-[11px] font-medium text-primary shrink-0 opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  {isThisPending ? "Launching…" : "Launch →"}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -90,11 +130,11 @@ export function DemoAccounts() {
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="flex w-full items-center justify-between px-4 py-3 text-xs font-medium hover:bg-muted/30 transition-colors"
+          className="flex w-full items-center justify-between px-4 py-3 text-xs font-medium hover:bg-muted/30 transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <span>All 10 Pre-Seeded Accounts</span>
-            <span className="rounded-md border border-border/80 bg-background/80 px-1.5 py-0.2 font-mono text-[10px] text-muted-foreground">
+            <span className="rounded-md border border-border/80 bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               pwd: Demo123!
             </span>
           </span>
@@ -106,110 +146,60 @@ export function DemoAccounts() {
 
         {open && (
           <div className="max-h-80 overflow-y-auto border-t border-border/60 p-1.5 space-y-1">
-            {ACCOUNTS.map((a) => (
-              <div
-                key={a.email}
-                className="flex items-center gap-2 rounded-lg p-2 hover:bg-accent/50 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`${ROLE_STYLE[a.role]} shrink-0 text-[10px]`}>
-                      {a.role}
-                    </Badge>
-                    <span className="truncate text-xs font-medium text-foreground">{a.name}</span>
-                    <span className="ml-auto hidden text-[11px] text-muted-foreground sm:inline truncate">
-                      {a.note}
-                    </span>
+            {ACCOUNTS.map((a) => {
+              const isThisPending = isPending && launchingEmail === a.email;
+              return (
+                <div
+                  key={a.email}
+                  className="flex items-center gap-2 rounded-lg p-2 hover:bg-accent/50 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={`${ROLE_STYLE[a.role]} shrink-0 text-[10px]`}>
+                        {a.role}
+                      </Badge>
+                      <span className="truncate text-xs font-medium text-foreground">{a.name}</span>
+                      <span className="ml-auto hidden text-[11px] text-muted-foreground sm:inline truncate">
+                        {a.note}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">{a.email}</p>
                   </div>
-                  <p className="mt-0.5 font-mono text-[11px] text-muted-foreground truncate">{a.email}</p>
-                </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-7"
-                    type="button"
-                    onClick={() => copy(a.email)}
-                    aria-label={`Copy ${a.name}'s email address`}
-                    title="Copy email"
-                  >
-                    {copied === a.email ? (
-                      <Check className="size-3.5 text-success" aria-hidden="true" />
-                    ) : (
-                      <Copy className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-7"
+                      type="button"
+                      onClick={() => copy(a.email)}
+                      aria-label={`Copy ${a.name}'s email address`}
+                      title="Copy email"
+                    >
+                      {copied === a.email ? (
+                        <Check className="size-3.5 text-success" aria-hidden="true" />
+                      ) : (
+                        <Copy className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </Button>
 
-                  <form action={quickLogin}>
-                    <input type="hidden" name="email" value={a.email} />
-                    <input type="hidden" name="password" value="Demo123!" />
-                    <QuickSignInSubmitButton />
-                  </form>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[11px] font-mono"
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleLaunch(a.email)}
+                    >
+                      {isThisPending ? <Loader2 className="size-3 animate-spin" /> : "Sign in"}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
     </div>
-  );
-}
-
-function PersonaLaunchButton({
-  label,
-  name,
-  desc,
-  icon: Icon,
-}: {
-  label: string;
-  name: string;
-  desc: string;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/60 p-2.5 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.04] disabled:opacity-60"
-    >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border/80 bg-muted/30 text-foreground group-hover:border-primary/40 group-hover:text-primary transition-colors">
-          {pending ? <Loader2 className="size-4 animate-spin text-primary" /> : <Icon className="size-4" />}
-        </span>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-              {label}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono truncate">
-              ({name})
-            </span>
-          </div>
-          <p className="text-[11px] text-muted-foreground truncate">{desc}</p>
-        </div>
-      </div>
-
-      <span className="font-mono text-[11px] font-medium text-primary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        {pending ? "Launching…" : "Launch →"}
-      </span>
-    </button>
-  );
-}
-
-function QuickSignInSubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button
-      size="sm"
-      variant="outline"
-      className="h-7 px-2 text-[11px] font-mono"
-      disabled={pending}
-    >
-      {pending ? <Loader2 className="size-3 animate-spin" /> : "Sign in"}
-    </Button>
   );
 }

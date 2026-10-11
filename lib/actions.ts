@@ -37,8 +37,33 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
   redirect("/dashboard");
 }
 
+export async function quickLoginPersona(emailOrFormData: string | FormData): Promise<void> {
+  let email = "";
+  if (typeof emailOrFormData === "string") {
+    email = emailOrFormData;
+  } else if (emailOrFormData && typeof emailOrFormData.get === "function") {
+    email = String(emailOrFormData.get("email") ?? "");
+  }
+
+  const normalized = String(email ?? "").trim().toLowerCase();
+  if (!normalized) throw new Error("Email is required.");
+
+  const { data: user, error } = await db
+    .from("users")
+    .select("id,name,role")
+    .eq("email", normalized)
+    .maybeSingle();
+
+  if (error || !user) {
+    throw new Error(`Demo account ${normalized} not found.`);
+  }
+
+  await createSession({ userId: user.id, role: user.role, name: user.name });
+  redirect("/dashboard");
+}
+
 export async function quickLogin(form: FormData): Promise<void> {
-  await login({}, form);
+  await quickLoginPersona(form);
 }
 
 export async function logout() {
