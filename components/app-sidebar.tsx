@@ -32,13 +32,17 @@ export function AppSidebar({ session }: { session: Session }) {
   const renderBody = (compact: boolean, desktop = false) => (
     <>
       <div className={`flex items-center gap-2.5 py-5 ${compact ? "flex-col px-2" : "px-5"}`}>
-        <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-          <Sparkles className="size-4" />
-        </div>
-        {!compact && <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold tracking-tight">NovaWorks</p>
-          <p className="truncate text-xs text-muted-foreground">Project CRM</p>
-        </div>}
+        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity">
+          <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/20">
+            <Sparkles className="size-4" />
+          </div>
+          {!compact && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold tracking-tight text-foreground">NovaWorks</p>
+              <p className="truncate text-xs text-muted-foreground font-mono">Project CRM</p>
+            </div>
+          )}
+        </Link>
         {desktop && (
           <Button
             type="button"

@@ -37,6 +37,10 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
   redirect("/dashboard");
 }
 
+export async function quickLogin(form: FormData): Promise<void> {
+  await login({}, form);
+}
+
 export async function logout() {
   await destroySession();
   redirect("/login");

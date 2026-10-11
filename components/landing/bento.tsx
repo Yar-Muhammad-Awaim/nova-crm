@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { FEATURES } from "@/lib/content/landing";
 import { BentoVisual } from "./bento-visuals";
 import { SectionHeading, SpotlightCard, Stagger, staggerChild } from "./primitives";
+import { Badge } from "@/components/ui/badge";
 
 /** Mixed spans so the grid reads as composed rather than tiled. */
 const SPAN: Record<string, string> = {
@@ -17,22 +18,37 @@ export function Bento() {
     <section id="features" className="scroll-mt-24 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="What it handles"
-          title={<>The parts of a meeting that are <em className="italic text-primary">easy to get wrong</em>.</>}
-          sub="Extraction is the simple half. Everything below is the half that decides whether you can trust the result."
+          eyebrow="Core Engine Capabilities"
+          title={
+            <>
+              Engineered for the Scenarios That <em className="italic text-primary">Break Generic AI</em>.
+            </>
+          }
+          sub="Extraction is the simple part. Maintaining data integrity, resolving mid-meeting changes, and guaranteeing transaction safety is what matters."
         />
 
-        <Stagger className="mt-14 grid gap-4 md:auto-rows-[minmax(10rem,auto)] md:grid-cols-6">
+        <Stagger className="mt-14 grid gap-4 md:auto-rows-[minmax(10.5rem,auto)] md:grid-cols-6">
           {FEATURES.map((f) => (
             <motion.div key={f.title} variants={staggerChild} className={SPAN[f.span]}>
               <SpotlightCard
-                tilt={f.span === "lg" ? 0 : 3.5}
-                className="hairline flex h-full flex-col rounded-2xl border bg-card/60 p-6 transition-colors duration-300 hover:border-primary/35"
+                tilt={f.span === "lg" ? 0 : 3}
+                className="hairline flex h-full flex-col rounded-2xl border bg-card/60 p-6 transition-colors duration-300 hover:border-primary/40 shadow-xs"
               >
-                <h3 className="font-display text-xl tracking-tight">{f.title}</h3>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-display text-xl font-semibold tracking-tight text-foreground">
+                    {f.title}
+                  </h3>
+                  {f.metric && (
+                    <Badge variant="outline" className="border-border/80 bg-secondary/50 font-mono text-[10px] text-muted-foreground shrink-0">
+                      {f.metric}
+                    </Badge>
+                  )}
+                </div>
+
                 <p className="measure mt-2.5 text-pretty text-sm leading-relaxed text-muted-foreground">
                   {f.body}
                 </p>
+
                 <div
                   className={
                     f.span === "lg"
